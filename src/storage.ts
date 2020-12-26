@@ -13,4 +13,10 @@ export class LocalStorageKeyStorage implements KeyStorage {
       storeName: 'keys'
     });
   }
+
+  async getKeys() {
+    const keys = await this.storage.keys();
+
+    console.log(keys);
+  }
 }

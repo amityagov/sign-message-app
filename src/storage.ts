@@ -20,3 +20,5 @@ export class LocalStorageKeyStorage implements KeyStorage {
     console.log(keys);
   }
 }
+
+export const LocalStorageKeyStorageInstance = new LocalStorageKeyStorage();

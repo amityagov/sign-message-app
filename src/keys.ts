@@ -8,7 +8,7 @@ export const generateKey = async (): Promise<CryptoKeyPair> => {
       name: "ECDSA",
       namedCurve: "P-256",
     },
-    false,
+    true,
     ["sign", "verify"]
   );
 
@@ -45,4 +45,8 @@ export const verify = async (data: string, signature: string, publicKey: CryptoK
     signatureBuffer,
     dataBuffer
   )
+};
+
+export const createKeyName = (x: string, y: string) => {
+  return `${x}/${y}`;
 };

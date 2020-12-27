@@ -1,25 +1,62 @@
 import React from 'react';
 import { Button, Typography, Container, AppBar, Toolbar, Grid, Accordion, AccordionSummary, AccordionDetails } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-import { generateKey } from '../keys';
-import { writeData } from '../analytics';
 import { NavLink } from 'react-router-dom';
+
+import { createKeyName, generateKey, exportKey } from '../keys';
+import { writeData } from '../analytics';
+
+import { LocalStorageKeyStorageInstance } from '../storage';
+
 import { KeyList } from '../components/key-list';
+import { HowItWorks } from '../components/how-it-works';
+import { KeyType } from '../types';
 
-const createKey = async () => {
-  const key = await generateKey();
 
-  writeData('create_key');
+type State = {
+  keys: KeyType[];
 };
-
-const helpAccordionOnChange = (_: any, expanded: any) => {
-  if (expanded) {
-    writeData('help_expanded');
+export class Home extends React.Component<{}, State> {
+  constructor(props: any) {
+    super(props);
+    this.state = {
+      keys: []
+    };
   }
-};
 
-export class Home extends React.Component {
+  private loadKeys = async () => {
+    const serializedKeys = await LocalStorageKeyStorageInstance.getKeys();
+
+    const keys = serializedKeys.map(x => {
+      return JSON.parse(x) as KeyType;
+    }).sort((x) => x.dateCreated);
+
+    this.setState({ keys });
+  }
+
+  async componentDidMount() {
+    await this.loadKeys();
+  }
+
+  createKey = async () => {
+    const key = await generateKey();
+    const exportedPrivateKey = await exportKey(key.privateKey);
+
+    const name = createKeyName(exportedPrivateKey.x!, exportedPrivateKey.y!);
+
+    const keyData: KeyType = {
+      name,
+      key: btoa(JSON.stringify(exportedPrivateKey)),
+      dateCreated: +new Date(),
+    }
+
+    await LocalStorageKeyStorageInstance.saveKey(name, JSON.stringify(keyData));
+
+    writeData('create_key');
+
+    await this.loadKeys();
+  }
+
   render() {
     return (
       <>
@@ -37,30 +74,18 @@ export class Home extends React.Component {
           <Container maxWidth="lg">
             <div className="mb10 mt10">
               <Grid container justify="flex-end">
-                <Button variant="contained" color="primary" onClick={createKey}>
+                <Button variant="contained" color="primary" onClick={this.createKey}>
                   Create key
               </Button>
               </Grid>
             </div>
 
             <div className="mb10 mt10">
-              <Accordion onChange={helpAccordionOnChange}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography>
-                    How it works
-                </Typography>
-                </AccordionSummary>
-
-                <AccordionDetails>
-                  <Typography>
-                    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quos beatae veniam quidem itaque distinctio aliquam fuga esse, sunt perferendis, veritatis sed molestias id ratione doloribus ducimus nam, quam et. Voluptas?
-                </Typography>
-                </AccordionDetails>
-              </Accordion>
+              <HowItWorks />
             </div>
 
             <div className="mt10 mb10">
-              <KeyList />
+              <KeyList keys={this.state.keys} />
             </div>
           </Container>
         </div>

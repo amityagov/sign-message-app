@@ -18,8 +18,8 @@
   },
   "cache": {
     "disablePlugin": false,
-    "inDev": true,
+    "inDev": false,
     "strategy": "default",
-    "clearDist": true
+    "clearDist": false
   }
 }

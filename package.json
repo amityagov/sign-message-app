@@ -21,5 +21,8 @@
     "inDev": false,
     "strategy": "default",
     "clearDist": false
+  },
+  "scripts": {
+    "start": "parcel ./index.html"
   }
 }

@@ -15,12 +15,12 @@ export const HowItWorks = () => <Accordion onChange={helpAccordionOnChange}>
   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
     <Typography>
       How it works
-</Typography>
+    </Typography>
   </AccordionSummary>
 
   <AccordionDetails>
     <Typography>
       Keys stored in your browser.
-</Typography>
+    </Typography>
   </AccordionDetails>
 </Accordion>

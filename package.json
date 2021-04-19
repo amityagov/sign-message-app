@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "build": "rimraf ./docs/*.js && rimraf ./docs/*.map && rimraf ./docs/*.css && rimraf ./docs/index.html && parcel build ./index.html -d ./docs/"
+    "build": "rimraf ./docs/*.js && rimraf ./docs/*.map && rimraf ./docs/*.css && rimraf ./docs/index.html && parcel build ./index.html -d ./docs/",
+    "start": "parcel ./index.html"
   },
   "devDependencies": {
     "@types/react": "^17.0.0",
@@ -25,8 +26,5 @@
     "inDev": false,
     "strategy": "default",
     "clearDist": false
-  },
-  "scripts": {
-    "start": "parcel ./index.html"
   }
 }

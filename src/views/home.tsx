@@ -1,31 +1,34 @@
 import React from 'react';
-import { Button, Typography, Container, AppBar, Toolbar, Grid, Accordion, AccordionSummary, AccordionDetails } from '@material-ui/core';
+import { Button, Typography, Container, AppBar, Toolbar, Grid } from '@material-ui/core';
 
 import { NavLink } from 'react-router-dom';
 
 import { createKeyName, generateKey, exportKey } from '../keys';
+
 import { writeData } from '../analytics';
 
-import { LocalStorageKeyStorageInstance } from '../storage';
+import { LocalStorageKeyStorageInstance, LocalStorageKeyStatsStorageInstance } from '../storage';
 
 import { KeyList } from '../components/key-list';
 import { HowItWorks } from '../components/how-it-works';
-import { KeyType } from '../types';
-
+import { KeyType, KeyStatsData } from '../types';
 
 type State = {
   keys: KeyType[];
+  stats: KeyStatsData[];
 };
+
 export class Home extends React.Component<{}, State> {
   constructor(props: any) {
     super(props);
     this.state = {
-      keys: []
+      keys: [],
+      stats: []
     };
   }
 
   private loadKeys = async () => {
-    const serializedKeys = await LocalStorageKeyStorageInstance.getKeys();
+    const serializedKeys = await LocalStorageKeyStorageInstance.getItems();
 
     const keys = serializedKeys.map(x => {
       return JSON.parse(x) as KeyType;
@@ -34,8 +37,18 @@ export class Home extends React.Component<{}, State> {
     this.setState({ keys });
   }
 
+  private loadStats = async () => {
+    const serializedKeys = await LocalStorageKeyStatsStorageInstance.getItems();
+    const stats = serializedKeys.map(x => {
+      return JSON.parse(x) as KeyStatsData;
+    });
+
+    this.setState({ stats });
+  }
+
   async componentDidMount() {
     await this.loadKeys();
+    await this.loadStats();
   }
 
   createKey = async () => {
@@ -45,16 +58,25 @@ export class Home extends React.Component<{}, State> {
     const name = createKeyName(exportedPrivateKey.x!, exportedPrivateKey.y!);
 
     const keyData: KeyType = {
+      id: name,
       name,
       key: btoa(JSON.stringify(exportedPrivateKey)),
       dateCreated: +new Date(),
     }
 
-    await LocalStorageKeyStorageInstance.saveKey(name, JSON.stringify(keyData));
+    await LocalStorageKeyStorageInstance.save(name, JSON.stringify(keyData));
 
     writeData('create_key');
 
     await this.loadKeys();
+  }
+
+  delete = async (id: string) => {
+    await LocalStorageKeyStorageInstance.delete(id);
+    await LocalStorageKeyStatsStorageInstance.delete(id);
+
+    await this.loadKeys();
+    await this.loadStats();
   }
 
   render() {
@@ -85,7 +107,11 @@ export class Home extends React.Component<{}, State> {
             </div>
 
             <div className="mt10 mb10">
-              <KeyList keys={this.state.keys} />
+              <KeyList
+                stats={this.state.stats}
+                keys={this.state.keys}
+                onDelete={this.delete}
+              />
             </div>
           </Container>
         </div>
